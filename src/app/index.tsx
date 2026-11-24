@@ -15,7 +15,7 @@ export default function SplashScreen() {
     };
 
     startApp();
-  }, []);
+  }, [router]); // 👈 Added router here
 
   return (
     <View style={styles.container}>
