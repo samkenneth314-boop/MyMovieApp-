@@ -1,0 +1,39 @@
+{
+  "expo": {
+    "name": "CineVault",
+    "slug": "cinevault",
+    "version": "1.0.0",
+    "orientation": "default",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#060912"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro",
+      "output": "single",
+      "themeColor": "#060912",
+      "backgroundColor": "#060912",
+      "display": "standalone"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.saahene.cinevault"
+    },
+    "plugins": [
+      "expo-font",
+      "expo-router",
+      "expo-splash-screen",
+      "expo-status-bar",
+      "expo-video",
+      "expo-web-browser",
+      "expo-asset"
+    ],
+    "android": {
+      "package": "com.saahene.cinevault"
+    }
+  }
+}
