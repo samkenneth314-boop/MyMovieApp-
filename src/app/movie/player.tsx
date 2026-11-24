@@ -1,9 +1,22 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as ScreenOrientation from 'expo-screen-orientation';
 import { X } from 'lucide-react-native';
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { WebView } from 'react-native-webview';
+
+// 👇 MEMOIZED IFRAME: This prevents iOS Safari from reloading the video on rotation
+const WebIframe = React.memo(({ url }: { url: string }) => {
+  return (
+    <iframe
+      src={url}
+      style={{ width: '100%', height: '100%', border: 'none' }}
+      allowFullScreen
+      allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
+      scrolling="no"
+    />
+  );
+});
 
 export default function VideoPlayer() {
   const router = useRouter();
@@ -22,15 +35,9 @@ export default function VideoPlayer() {
     <View style={styles.container}>
       {videoUrl ? (
         Platform.OS === 'web' ? (
-          // 👇 Fixed TypeScript error here
-          <View style={styles.fill}>
-            <iframe
-              src={videoUrl as string}
-              style={{ width: '100%', height: '100%', border: 'none' }}
-              allowFullScreen
-              allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
-              scrolling="no"
-            />
+          <View style={StyleSheet.absoluteFillObject}>
+            {/* 👇 Use the Memoized component here */}
+            <WebIframe url={videoUrl as string} />
           </View>
         ) : (
           <WebView
@@ -60,19 +67,8 @@ export default function VideoPlayer() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#000' },
   webview: { flex: 1, backgroundColor: '#000' },
-  fill: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-  },
   overlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
+    ...StyleSheet.absoluteFillObject,
     zIndex: 10,
   },
   closeButton: { 
