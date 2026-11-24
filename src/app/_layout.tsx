@@ -1,5 +1,5 @@
 import { Stack } from 'expo-router';
-import { Platform } from 'react-native'; // 👈 Import Platform
+import { Platform } from 'react-native';
 import { ThemeProvider } from '../context/ThemeContext';
 
 export default function RootLayout() {
@@ -8,7 +8,6 @@ export default function RootLayout() {
       <Stack 
         screenOptions={{ 
           headerShown: false, 
-          // 👇 Disable fade animation on web to stop iOS Safari bar from appearing
           animation: Platform.OS === 'web' ? 'none' : 'fade' 
         }}
       >
