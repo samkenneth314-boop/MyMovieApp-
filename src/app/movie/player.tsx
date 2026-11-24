@@ -35,8 +35,8 @@ export default function VideoPlayer() {
     <View style={styles.container}>
       {videoUrl ? (
         Platform.OS === 'web' ? (
-          <View style={StyleSheet.absoluteFillObject}>
-            {/* 👇 Use the Memoized component here */}
+          // 👇 FIXED: Changed to StyleSheet.absoluteFill
+          <View style={StyleSheet.absoluteFill}>
             <WebIframe url={videoUrl as string} />
           </View>
         ) : (
@@ -68,7 +68,12 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#000' },
   webview: { flex: 1, backgroundColor: '#000' },
   overlay: {
-    ...StyleSheet.absoluteFillObject,
+    // 👇 FIXED: Manually wrote out the absolute fill style
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
     zIndex: 10,
   },
   closeButton: { 
