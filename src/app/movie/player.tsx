@@ -22,13 +22,14 @@ export default function VideoPlayer() {
     <View style={styles.container}>
       {videoUrl ? (
         Platform.OS === 'web' ? (
-          <View style={styles.webIframeContainer}>
+          // 👇 Fixed TypeScript error here
+          <View style={styles.fill}>
             <iframe
               src={videoUrl as string}
               style={{ width: '100%', height: '100%', border: 'none' }}
               allowFullScreen
               allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
-              sandbox="allow-scripts allow-same-origin allow-presentation allow-forms"
+              scrolling="no"
             />
           </View>
         ) : (
@@ -59,7 +60,7 @@ export default function VideoPlayer() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#000' },
   webview: { flex: 1, backgroundColor: '#000' },
-  webIframeContainer: {
+  fill: {
     position: 'absolute',
     top: 0,
     left: 0,
