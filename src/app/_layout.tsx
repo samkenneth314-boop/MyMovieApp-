@@ -1,10 +1,17 @@
 import { Stack } from 'expo-router';
+import { Platform } from 'react-native'; // 👈 Import Platform
 import { ThemeProvider } from '../context/ThemeContext';
 
 export default function RootLayout() {
   return (
     <ThemeProvider>
-      <Stack screenOptions={{ headerShown: false, animation: 'fade' }}>
+      <Stack 
+        screenOptions={{ 
+          headerShown: false, 
+          // 👇 Disable fade animation on web to stop iOS Safari bar from appearing
+          animation: Platform.OS === 'web' ? 'none' : 'fade' 
+        }}
+      >
         <Stack.Screen name="index" />
         <Stack.Screen name="home" />
         <Stack.Screen name="search" />
@@ -16,7 +23,7 @@ export default function RootLayout() {
         <Stack.Screen name="category" />
         <Stack.Screen name="movie/[id]" />
         <Stack.Screen name="movie/player" />
-        <Stack.Screen name="movie/full-player" /> {/* 👈 NEW ROUTE ADDED */}
+        <Stack.Screen name="movie/full-player" />
         <Stack.Screen name="person/[id]" />
       </Stack>
     </ThemeProvider>
