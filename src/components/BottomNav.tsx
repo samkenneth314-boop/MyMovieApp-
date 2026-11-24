@@ -1,9 +1,8 @@
-import { usePathname, useRouter } from 'expo-router';
+import { Link, usePathname } from 'expo-router'; // 👈 1. Import Link instead of useRouter
 import { Bookmark, Download, House, Search, UserRound } from 'lucide-react-native';
 import { Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export default function BottomNav() {
-  const router = useRouter();
   const pathname = usePathname();
 
   // Design Reference Colors
@@ -15,59 +14,69 @@ export default function BottomNav() {
     <View style={styles.navContainer}>
       
       {/* 1. HOME */}
-      <TouchableOpacity style={styles.navItem} onPress={() => router.push('/home')}>
-        <House color={pathname === '/home' ? ACTIVE_COLOR : INACTIVE_COLOR} size={ICON_SIZE} strokeWidth={pathname === '/home' ? 2.5 : 2} />
-        <Text style={[styles.navLabel, { color: pathname === '/home' ? ACTIVE_COLOR : INACTIVE_COLOR }]}>Home</Text>
-      </TouchableOpacity>
+      <Link href="/home" asChild>
+        <TouchableOpacity style={styles.navItem}>
+          <House color={pathname === '/home' ? ACTIVE_COLOR : INACTIVE_COLOR} size={ICON_SIZE} strokeWidth={pathname === '/home' ? 2.5 : 2} />
+          <Text style={[styles.navLabel, { color: pathname === '/home' ? ACTIVE_COLOR : INACTIVE_COLOR }]}>Home</Text>
+        </TouchableOpacity>
+      </Link>
 
       {/* 2. SEARCH */}
-      <TouchableOpacity style={styles.navItem} onPress={() => router.push('/search')}>
-        <Search color={pathname === '/search' ? ACTIVE_COLOR : INACTIVE_COLOR} size={ICON_SIZE} strokeWidth={pathname === '/search' ? 2.5 : 2} />
-        <Text style={[styles.navLabel, { color: pathname === '/search' ? ACTIVE_COLOR : INACTIVE_COLOR }]}>Search</Text>
-      </TouchableOpacity>
+      <Link href="/search" asChild>
+        <TouchableOpacity style={styles.navItem}>
+          <Search color={pathname === '/search' ? ACTIVE_COLOR : INACTIVE_COLOR} size={ICON_SIZE} strokeWidth={pathname === '/search' ? 2.5 : 2} />
+          <Text style={[styles.navLabel, { color: pathname === '/search' ? ACTIVE_COLOR : INACTIVE_COLOR }]}>Search</Text>
+        </TouchableOpacity>
+      </Link>
 
       {/* 3. SAVED */}
-      <TouchableOpacity style={styles.navItem} onPress={() => router.push({ pathname: '/saved', params: { type: 'favorites' } })}>
-        <Bookmark color={pathname === '/saved' ? ACTIVE_COLOR : INACTIVE_COLOR} size={ICON_SIZE} strokeWidth={pathname === '/saved' ? 2.5 : 2} />
-        <Text style={[styles.navLabel, { color: pathname === '/saved' ? ACTIVE_COLOR : INACTIVE_COLOR }]}>Saved</Text>
-      </TouchableOpacity>
+      <Link href={{ pathname: '/saved', params: { type: 'favorites' } }} asChild>
+        <TouchableOpacity style={styles.navItem}>
+          <Bookmark color={pathname === '/saved' ? ACTIVE_COLOR : INACTIVE_COLOR} size={ICON_SIZE} strokeWidth={pathname === '/saved' ? 2.5 : 2} />
+          <Text style={[styles.navLabel, { color: pathname === '/saved' ? ACTIVE_COLOR : INACTIVE_COLOR }]}>Saved</Text>
+        </TouchableOpacity>
+      </Link>
 
       {/* 4. DOWNLOADS */}
-      <TouchableOpacity style={styles.navItem} onPress={() => router.push('/downloads')}>
-        <Download color={pathname === '/downloads' ? ACTIVE_COLOR : INACTIVE_COLOR} size={ICON_SIZE} strokeWidth={pathname === '/downloads' ? 2.5 : 2} />
-        <Text style={[styles.navLabel, { color: pathname === '/downloads' ? ACTIVE_COLOR : INACTIVE_COLOR }]}>Downloads</Text>
-      </TouchableOpacity>
+      <Link href="/downloads" asChild>
+        <TouchableOpacity style={styles.navItem}>
+          <Download color={pathname === '/downloads' ? ACTIVE_COLOR : INACTIVE_COLOR} size={ICON_SIZE} strokeWidth={pathname === '/downloads' ? 2.5 : 2} />
+          <Text style={[styles.navLabel, { color: pathname === '/downloads' ? ACTIVE_COLOR : INACTIVE_COLOR }]}>Downloads</Text>
+        </TouchableOpacity>
+      </Link>
 
       {/* 5. ME (PROFILE) */}
-      <TouchableOpacity style={styles.navItem} onPress={() => router.push('/profile')}>
-        <UserRound color={pathname === '/profile' ? ACTIVE_COLOR : INACTIVE_COLOR} size={ICON_SIZE} strokeWidth={pathname === '/profile' ? 2.5 : 2} />
-        <Text style={[styles.navLabel, { color: pathname === '/profile' ? ACTIVE_COLOR : INACTIVE_COLOR }]}>Me</Text>
-      </TouchableOpacity>
+      <Link href="/profile" asChild>
+        <TouchableOpacity style={styles.navItem}>
+          <UserRound color={pathname === '/profile' ? ACTIVE_COLOR : INACTIVE_COLOR} size={ICON_SIZE} strokeWidth={pathname === '/profile' ? 2.5 : 2} />
+          <Text style={[styles.navLabel, { color: pathname === '/profile' ? ACTIVE_COLOR : INACTIVE_COLOR }]}>Me</Text>
+        </TouchableOpacity>
+      </Link>
 
     </View>
   );
 }
 
+// ... styles remain EXACTLY the same ...
 const styles = StyleSheet.create({
   navContainer: {
     position: 'absolute',
-    bottom: Platform.OS === 'ios' ? 30 : 20, // Safe area spacing for iOS and Android
+    bottom: Platform.OS === 'ios' ? 30 : 20,
     left: 20,
     right: 20,
-    backgroundColor: '#0D1020', // Deep navy/black
-    borderRadius: 35, // Rounded capsule shape
+    backgroundColor: '#0D1020',
+    borderRadius: 35,
     borderWidth: 1,
-    borderColor: '#303548', // Thin elegant border
+    borderColor: '#303548',
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',
     paddingVertical: 14,
-    // Subtle red glow and shadow
     shadowColor: '#F00032',
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.15,
     shadowRadius: 12,
-    elevation: 10, // Android shadow
+    elevation: 10,
   },
   navItem: {
     alignItems: 'center',
