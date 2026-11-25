@@ -8,9 +8,7 @@
             <key>FullScreen</key>
             <true/>
             <key>Icon</key>
-            <data>
-            <!-- You need to put a Base64 encoded version of your 512x512 icon here -->
-            </data>
+            <data>iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=</data>
             <key>IsRemovable</key>
             <true/>
             <key>Label</key>
@@ -24,11 +22,11 @@
             <key>PayloadType</key>
             <string>com.apple.webClip.managed</string>
             <key>PayloadUUID</key>
-            <string>12345678-1234-1234-1234-123456789012</string>
+            <string>A1B2C3D4-E5F6-4321-8765-A1B2C3D4E5F6</string>
             <key>PayloadVersion</key>
             <integer>1</integer>
             <key>URL</key>
-            <string>https://YOUR_VERCEL_URL.vercel.app</string>
+            <string>https://cve-rouge.vercel.app</string>
         </dict>
     </array>
     <key>PayloadDisplayName</key>
@@ -42,7 +40,7 @@
     <key>PayloadType</key>
     <string>Configuration</string>
     <key>PayloadUUID</key>
-    <string>87654321-4321-4321-4321-210987654321</string>
+    <string>1A2B3C4D-5E6F-4A3B-2C1D-0E9F8A7B6C5D</string>
     <key>PayloadVersion</key>
     <integer>1</integer>
 </dict>
