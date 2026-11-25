@@ -1,9 +1,10 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect, useRouter } from 'expo-router';
-import { Bookmark, Clock, Download, Heart, Info, LogIn, Moon, Pencil, Share2, Trash2, User } from 'lucide-react-native';
+import { Bookmark, Clock, Download, Heart, Info, LogIn, Moon, Pencil, Share2, Smartphone, Trash2, User } from 'lucide-react-native';
 import { useCallback, useState } from 'react';
 import { Alert, SafeAreaView, ScrollView, Share, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
 import BottomNav from '../components/BottomNav';
+import InstallModal from '../components/InstallModal'; // 👈 Imported the Modal
 import { useTheme } from '../context/ThemeContext';
 
 export default function ProfileScreen() {
@@ -17,6 +18,9 @@ export default function ProfileScreen() {
   // Stats States
   const [favCount, setFavCount] = useState(0);
   const [downloadCount, setDownloadCount] = useState(0);
+
+  // 👇 State for Install Modal
+  const [showInstallModal, setShowInstallModal] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -76,7 +80,6 @@ export default function ProfileScreen() {
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
         <Text style={[styles.pageTitle, { color: colors.text }]}>Profile</Text>
 
-        {/* 👇 TAPPING THIS GOES TO EDIT PROFILE 👇 */}
         <TouchableOpacity 
           style={[styles.headerCard, { backgroundColor: isDarkMode ? '#3a1012' : '#ffe5e5' }]} 
           onPress={() => router.push('/edit-profile')}
@@ -94,7 +97,6 @@ export default function ProfileScreen() {
           </View>
         </TouchableOpacity>
 
-        {/* 👇 NEW STATS ROW 👇 */}
         <View style={[styles.statsRow, { backgroundColor: colors.card }]}>
           <View style={styles.statBox}>
             <Heart color={colors.primary} size={24} fill={colors.primary} />
@@ -116,6 +118,9 @@ export default function ProfileScreen() {
         </View>
 
         <View style={[styles.menuGroup, { backgroundColor: colors.card }]}>
+          {/* 👇 NEW INSTALL APP BUTTON 👇 */}
+          <MenuRow Icon={Smartphone} title="Install App" onPress={() => setShowInstallModal(true)} />
+          
           <MenuRow Icon={Moon} title="Dark Mode" isSwitch switchValue={isDarkMode} onSwitchChange={toggleTheme} />
           <MenuRow Icon={Trash2} title="Clear Caches" value={cacheSize} onPress={handleClearCache} />
           <MenuRow Icon={Share2} title="Share App" onPress={handleShareApp} />
@@ -123,11 +128,16 @@ export default function ProfileScreen() {
           <MenuRow Icon={LogIn} title="Sign Up / Log In" onPress={() => Alert.alert("Coming Soon 🚀", "Sign in will be available soon!")} isLast />
         </View>
 
-        {/* 👇 FOOTER 👇 */}
         <Text style={[styles.footerText, { color: colors.subText }]}>CineVault App • Version 1.0.0</Text>
 
       </ScrollView>
       <BottomNav />
+
+      {/* 👇 RENDER THE MODAL HERE 👇 */}
+      <InstallModal 
+        visible={showInstallModal} 
+        onClose={() => setShowInstallModal(false)} 
+      />
     </SafeAreaView>
   );
 }

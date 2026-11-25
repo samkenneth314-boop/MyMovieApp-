@@ -2,7 +2,8 @@ import { Dimensions, Image, StyleSheet, Text, TouchableOpacity } from 'react-nat
 import { useTheme } from '../context/ThemeContext';
 
 const { width } = Dimensions.get('window');
-const CARD_WIDTH = width * 0.32; 
+// 👇 NEW MATH: Subtracts padding and divides by 3, minus a small gap
+const CARD_WIDTH = (width - 32) / 3 - 10; 
 
 export default function MovieCard({ item, onPress }: any) {
   const { colors } = useTheme();
@@ -14,7 +15,6 @@ export default function MovieCard({ item, onPress }: any) {
   return (
     <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.8}>
       <Image source={{ uri: imageUrl }} style={styles.poster} />
-      {/* 👇 ADDED item.name FOR TV SHOWS 👇 */}
       <Text style={[styles.title, { color: colors.text }]} numberOfLines={1}>
         {item.title || item.name}
       </Text>
@@ -23,7 +23,8 @@ export default function MovieCard({ item, onPress }: any) {
 }
 
 const styles = StyleSheet.create({
-  card: { width: CARD_WIDTH, marginBottom: 15, marginRight: 12 },
+  // 👇 REMOVED marginRight: 12
+  card: { width: CARD_WIDTH, marginBottom: 15 }, 
   poster: { width: '100%', height: CARD_WIDTH * 1.5, borderRadius: 10, backgroundColor: '#222' },
-  title: { marginTop: 6, fontSize: 12, fontWeight: '600' },
+  title: { marginTop: 6, fontSize: 11, fontWeight: '600' },
 });

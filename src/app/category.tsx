@@ -23,7 +23,6 @@ export default function CategoryScreen() {
   const fetchMovies = (pageNum: number) => {
     let url = '';
     
-    // 👇 ADDED TV POPULAR AND TV AIRING ROUTES 👇
     if (type === 'tv_popular') {
       url = `https://api.themoviedb.org/3/tv/popular?api_key=${API_KEY}&language=en-US&page=${pageNum}`;
     } else if (type === 'tv_airing') {
@@ -82,9 +81,10 @@ export default function CategoryScreen() {
         <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 50 }} />
       ) : (
         <FlatList
+          key={3} // 👈 ADDED: Forces FlatList to re-render for 3 columns
           data={movies}
           keyExtractor={(item, index) => `${item.id}-${index}`}
-          numColumns={2}
+          numColumns={3} // 👈 CHANGED: From 2 to 3
           columnWrapperStyle={styles.row}
           contentContainerStyle={{ paddingBottom: 50 }}
           showsVerticalScrollIndicator={false}
@@ -94,7 +94,6 @@ export default function CategoryScreen() {
           renderItem={({ item }) => (
             <MovieCard 
               item={item} 
-              // 👇 ROUTING FIX FOR TV SHOWS 👇
               onPress={() => router.push({ 
                 pathname: '/movie/[id]', 
                 params: { id: item.id, type: (type === 'tv_popular' || type === 'tv_airing') ? 'tv' : 'movie' } 
@@ -112,5 +111,5 @@ const styles = StyleSheet.create({
   header: { flexDirection: 'row', alignItems: 'center', paddingTop: 60, paddingBottom: 20 },
   backBtn: { flexDirection: 'row', alignItems: 'center', paddingVertical: 8, paddingHorizontal: 12, borderRadius: 8, marginRight: 15 },
   title: { fontSize: 24, fontWeight: 'bold' },
-  row: { justifyContent: 'space-between' },
+  row: { justifyContent: 'space-between', marginBottom: 15 }, // Added marginBottom to space out rows nicely
 });
