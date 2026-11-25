@@ -8,7 +8,9 @@
             <key>FullScreen</key>
             <true/>
             <key>Icon</key>
-            <data>iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=</data>
+            <data>
+                PASTE_YOUR_MASSIVE_BASE64_STRING_HERE
+            </data>
             <key>IsRemovable</key>
             <true/>
             <key>Label</key>
