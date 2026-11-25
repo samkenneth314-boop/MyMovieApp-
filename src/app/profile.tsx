@@ -1,15 +1,19 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Constants from 'expo-constants'; // 👈 Added for dynamic version
 import { useFocusEffect, useRouter } from 'expo-router';
 import { Bookmark, Clock, Download, Heart, Info, LogIn, Moon, Pencil, Share2, Smartphone, Trash2, User } from 'lucide-react-native';
 import { useCallback, useState } from 'react';
 import { Alert, SafeAreaView, ScrollView, Share, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
 import BottomNav from '../components/BottomNav';
-import InstallModal from '../components/InstallModal'; // 👈 Imported the Modal
+import InstallModal from '../components/InstallModal';
 import { useTheme } from '../context/ThemeContext';
 
 export default function ProfileScreen() {
   const router = useRouter();
   const { isDarkMode, toggleTheme, colors } = useTheme();
+  
+  // 👈 Dynamic version from app.json
+  const appVersion = Constants.expoConfig?.version || '1.0.1';
   
   const [userName, setUserName] = useState('Guest User');
   const [userEmail, setUserEmail] = useState('Tap to sign up');
@@ -19,7 +23,7 @@ export default function ProfileScreen() {
   const [favCount, setFavCount] = useState(0);
   const [downloadCount, setDownloadCount] = useState(0);
 
-  // 👇 State for Install Modal
+  // State for Install Modal
   const [showInstallModal, setShowInstallModal] = useState(false);
 
   useFocusEffect(
@@ -118,22 +122,22 @@ export default function ProfileScreen() {
         </View>
 
         <View style={[styles.menuGroup, { backgroundColor: colors.card }]}>
-          {/* 👇 NEW INSTALL APP BUTTON 👇 */}
           <MenuRow Icon={Smartphone} title="Install App" onPress={() => setShowInstallModal(true)} />
-          
           <MenuRow Icon={Moon} title="Dark Mode" isSwitch switchValue={isDarkMode} onSwitchChange={toggleTheme} />
           <MenuRow Icon={Trash2} title="Clear Caches" value={cacheSize} onPress={handleClearCache} />
           <MenuRow Icon={Share2} title="Share App" onPress={handleShareApp} />
-          <MenuRow Icon={Info} title="About Us" onPress={() => Alert.alert("About", "CineVault v1.0.0\nBuilt with React Native & TMDB")} />
+          <MenuRow Icon={Info} title="About Us" onPress={() => Alert.alert("About", "CineVault v1.0.1\nBuilt with React Native & TMDB")} />
           <MenuRow Icon={LogIn} title="Sign Up / Log In" onPress={() => Alert.alert("Coming Soon 🚀", "Sign in will be available soon!")} isLast />
         </View>
 
-        <Text style={[styles.footerText, { color: colors.subText }]}>CineVault App • Version 1.0.0</Text>
+        {/* 👇 Dynamic Version Number 👇 */}
+        <Text style={[styles.footerText, { color: colors.subText }]}>
+          CineVault App • Version {appVersion}
+        </Text>
 
       </ScrollView>
       <BottomNav />
 
-      {/* 👇 RENDER THE MODAL HERE 👇 */}
       <InstallModal 
         visible={showInstallModal} 
         onClose={() => setShowInstallModal(false)} 
