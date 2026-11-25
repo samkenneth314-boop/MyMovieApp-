@@ -1,9 +1,10 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import Constants from 'expo-constants'; // 👈 Added for dynamic version
+import Constants from 'expo-constants';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { Bookmark, Clock, Download, Heart, Info, LogIn, Moon, Pencil, Share2, Smartphone, Trash2, User } from 'lucide-react-native';
 import { useCallback, useState } from 'react';
 import { Alert, SafeAreaView, ScrollView, Share, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
+import AboutModal from '../components/AboutModal'; // 👈 NEW IMPORT
 import BottomNav from '../components/BottomNav';
 import InstallModal from '../components/InstallModal';
 import { useTheme } from '../context/ThemeContext';
@@ -12,31 +13,25 @@ export default function ProfileScreen() {
   const router = useRouter();
   const { isDarkMode, toggleTheme, colors } = useTheme();
   
-  // 👈 Dynamic version from app.json
   const appVersion = Constants.expoConfig?.version || '1.0.1';
   
   const [userName, setUserName] = useState('Guest User');
   const [userEmail, setUserEmail] = useState('Tap to sign up');
   const [cacheSize, setCacheSize] = useState('0B');
   
-  // Stats States
   const [favCount, setFavCount] = useState(0);
   const [downloadCount, setDownloadCount] = useState(0);
 
-  // State for Install Modal
   const [showInstallModal, setShowInstallModal] = useState(false);
+  const [showAboutModal, setShowAboutModal] = useState(false); // 👈 NEW STATE
 
   useFocusEffect(
     useCallback(() => {
-      // Load User Info
       AsyncStorage.getItem('@user_name').then(name => { if (name) setUserName(name); });
       AsyncStorage.getItem('@user_email').then(email => { if (email) setUserEmail(email); });
-      
-      // Load Stats
       AsyncStorage.getItem('@my_favorites').then(data => setFavCount(data ? JSON.parse(data).length : 0));
       AsyncStorage.getItem('@my_downloads').then(data => setDownloadCount(data ? JSON.parse(data).length : 0));
       
-      // Load Cache size
       AsyncStorage.getAllKeys().then(keys => {
         if (keys.length > 2) setCacheSize('12.4 MB'); else setCacheSize('0B');
       });
@@ -44,7 +39,7 @@ export default function ProfileScreen() {
   );
 
   const handleClearCache = async () => {
-    Alert.alert("Clear Caches", "Are you sure?", [
+    Alert.alert("Clear Caches", "Are you sure you want to clear all data, history, and favorites?", [
       { text: "Cancel", style: "cancel" },
       { text: "Clear", style: "destructive", onPress: async () => {
           await AsyncStorage.clear();
@@ -53,12 +48,17 @@ export default function ProfileScreen() {
           setDownloadCount(0);
           setUserName('Guest User');
           setUserEmail('Tap to sign up');
-          Alert.alert("Success", "All caches cleared.");
+          Alert.alert("Success", "All local data and caches cleared.");
       }}
     ]);
   };
 
-  const handleShareApp = async () => { try { await Share.share({ message: 'Check out CineVault! 🎬' }); } catch (error) {} };
+  // 👇 UPDATED SHARE FUNCTION 👇
+  const handleShareApp = async () => { 
+    try { 
+      await Share.share({ message: 'Check out CineVault! 🎬 Watch your favorite movies and shows here: https://cve-rouge.vercel.app' }); 
+    } catch (error) {} 
+  };
 
   const MenuRow = ({ Icon, title, value, onPress, isLast, isSwitch, switchValue, onSwitchChange }: any) => (
     <TouchableOpacity style={[styles.menuRow, !isLast && { borderBottomWidth: 1, borderBottomColor: colors.subText + '33' }]} onPress={onPress} disabled={isSwitch}>
@@ -126,11 +126,10 @@ export default function ProfileScreen() {
           <MenuRow Icon={Moon} title="Dark Mode" isSwitch switchValue={isDarkMode} onSwitchChange={toggleTheme} />
           <MenuRow Icon={Trash2} title="Clear Caches" value={cacheSize} onPress={handleClearCache} />
           <MenuRow Icon={Share2} title="Share App" onPress={handleShareApp} />
-          <MenuRow Icon={Info} title="About Us" onPress={() => Alert.alert("About", "CineVault v1.0.1\nBuilt with React Native & TMDB")} />
+          <MenuRow Icon={Info} title="About Us" onPress={() => setShowAboutModal(true)} /> {/* 👈 UPDATED */}
           <MenuRow Icon={LogIn} title="Sign Up / Log In" onPress={() => Alert.alert("Coming Soon 🚀", "Sign in will be available soon!")} isLast />
         </View>
 
-        {/* 👇 Dynamic Version Number 👇 */}
         <Text style={[styles.footerText, { color: colors.subText }]}>
           CineVault App • Version {appVersion}
         </Text>
@@ -142,6 +141,12 @@ export default function ProfileScreen() {
         visible={showInstallModal} 
         onClose={() => setShowInstallModal(false)} 
       />
+      
+      {/* 👇 ADDED ABOUT MODAL 👇 */}
+      <AboutModal 
+        visible={showAboutModal} 
+        onClose={() => setShowAboutModal(false)} 
+      />
     </SafeAreaView>
   );
 }
@@ -150,7 +155,6 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   pageTitle: { fontSize: 28, fontWeight: 'bold', paddingHorizontal: 20, paddingTop: 20, paddingBottom: 15 },
   
-  // Header Card
   headerCard: { flexDirection: 'row', alignItems: 'center', marginHorizontal: 20, padding: 20, borderRadius: 16, borderWidth: 1, borderColor: '#5a1a1d', marginBottom: 20 },
   avatarCircle: { width: 60, height: 60, borderRadius: 30, justifyContent: 'center', alignItems: 'center', marginRight: 15 },
   headerTextContainer: { flex: 1 },
@@ -158,14 +162,12 @@ const styles = StyleSheet.create({
   headerSub: { fontSize: 13 },
   editBadge: { width: 36, height: 36, borderRadius: 18, justifyContent: 'center', alignItems: 'center' },
 
-  // Stats Row
   statsRow: { flexDirection: 'row', marginHorizontal: 20, borderRadius: 16, paddingVertical: 15, marginBottom: 20, alignItems: 'center' },
   statBox: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   statDivider: { width: 1, height: '70%' },
   statNumber: { fontSize: 20, fontWeight: 'bold', marginTop: 5, marginBottom: 2 },
   statLabel: { fontSize: 12, fontWeight: '600' },
 
-  // Menus
   menuGroup: { marginHorizontal: 20, borderRadius: 16, marginBottom: 20, overflow: 'hidden' },
   menuRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 18, paddingHorizontal: 20 },
   menuLeft: { flexDirection: 'row', alignItems: 'center' },
@@ -175,6 +177,5 @@ const styles = StyleSheet.create({
   menuValue: { fontSize: 14, marginRight: 10 },
   chevron: { fontSize: 22, fontWeight: '300', marginTop: -2 },
 
-  // Footer
   footerText: { textAlign: 'center', fontSize: 12, marginTop: 10, marginBottom: 30 }
 });

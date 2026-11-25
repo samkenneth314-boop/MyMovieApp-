@@ -124,26 +124,44 @@ export default function MediaDetails() {
     if (trailerKey) router.push({ pathname: '/movie/player', params: { youtubeId: trailerKey, title: media.title || media.name } });
   };
 
-  // 👇 UPDATED FUNCTION USING VIDLINK EMBED PARAMETERS 👇
-  const handlePlayFullMovie = (seasonNum?: number, epNum?: number) => {
-    let url = '';
-    
-    // Parameters: autoplay=true, hide title, hide poster, match app's green color
-    const params = `?autoplay=true&title=false&poster=false&primaryColor=1DB954&nextbutton=true`;
+  // 👇 UPDATED TO SAVE WATCH HISTORY 👇
+  const handlePlayFullMovie = async (seasonNum?: number, epNum?: number) => {
+    try {
+      // 1. Save to Watch History
+      const historyJson = await AsyncStorage.getItem('@watch_history');
+      let history = historyJson ? JSON.parse(historyJson) : [];
+      
+      // Remove if it already exists so we can move it to the top
+      history = history.filter((h: any) => h.id !== media.id);
+      
+      // Add new item to the top with timestamp
+      history.unshift({ ...media, media_type: type, watchedAt: Date.now() });
+      
+      // Keep only the last 20 items
+      history = history.slice(0, 20);
+      
+      await AsyncStorage.setItem('@watch_history', JSON.stringify(history));
 
-    if (type === 'tv' && seasonNum && epNum) {
-      url = `https://vidlink.pro/tv/${media.id}/${seasonNum}/${epNum}${params}`;
-    } else {
-      url = `https://vidlink.pro/movie/${media.id}${params}`;
+      // 2. Build URL and navigate
+      let url = '';
+      const params = `?autoplay=true&title=false&poster=false&primaryColor=F00032&player=jw`;
+
+      if (type === 'tv' && seasonNum && epNum) {
+        url = `https://vidlink.pro/tv/${media.id}/${seasonNum}/${epNum}${params}`;
+      } else {
+        url = `https://vidlink.pro/movie/${media.id}${params}`;
+      }
+
+      router.push({ 
+        pathname: '/movie/player', 
+        params: { 
+          videoUrl: url, 
+          title: media.title || media.name 
+        } 
+      });
+    } catch (error) {
+      console.error("Error saving history:", error);
     }
-
-    router.push({ 
-      pathname: '/movie/player', 
-      params: { 
-        videoUrl: url, 
-        title: media.title || media.name 
-      } 
-    });
   };
 
   if (loading || !media) return <View style={[styles.center, { backgroundColor: colors.background }]}><ActivityIndicator size="large" color={colors.primary} /></View>;
