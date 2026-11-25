@@ -3,8 +3,9 @@ import Constants from 'expo-constants';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { Bookmark, Clock, Download, Heart, Info, LogIn, Moon, Pencil, Share2, Smartphone, Trash2, User } from 'lucide-react-native';
 import { useCallback, useState } from 'react';
-import { Alert, SafeAreaView, ScrollView, Share, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
-import AboutModal from '../components/AboutModal'; // 👈 NEW IMPORT
+// 👇 ADDED Platform IMPORT HERE 👇
+import { Alert, Platform, SafeAreaView, ScrollView, Share, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
+import AboutModal from '../components/AboutModal';
 import BottomNav from '../components/BottomNav';
 import InstallModal from '../components/InstallModal';
 import { useTheme } from '../context/ThemeContext';
@@ -23,7 +24,7 @@ export default function ProfileScreen() {
   const [downloadCount, setDownloadCount] = useState(0);
 
   const [showInstallModal, setShowInstallModal] = useState(false);
-  const [showAboutModal, setShowAboutModal] = useState(false); // 👈 NEW STATE
+  const [showAboutModal, setShowAboutModal] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -32,28 +33,50 @@ export default function ProfileScreen() {
       AsyncStorage.getItem('@my_favorites').then(data => setFavCount(data ? JSON.parse(data).length : 0));
       AsyncStorage.getItem('@my_downloads').then(data => setDownloadCount(data ? JSON.parse(data).length : 0));
       
+      // Load Cache size (Visual representation based on number of saved items)
       AsyncStorage.getAllKeys().then(keys => {
-        if (keys.length > 2) setCacheSize('12.4 MB'); else setCacheSize('0B');
+        const totalItems = keys.length;
+        if (totalItems > 0) {
+          setCacheSize(`${(totalItems * 0.5).toFixed(1)} MB`); 
+        } else {
+          setCacheSize('0B');
+        }
       });
     }, [])
   );
 
+  // 👇 FIXED CLEAR CACHE FUNCTION 👇
   const handleClearCache = async () => {
-    Alert.alert("Clear Caches", "Are you sure you want to clear all data, history, and favorites?", [
-      { text: "Cancel", style: "cancel" },
-      { text: "Clear", style: "destructive", onPress: async () => {
-          await AsyncStorage.clear();
-          setCacheSize('0B');
-          setFavCount(0);
-          setDownloadCount(0);
-          setUserName('Guest User');
-          setUserEmail('Tap to sign up');
+    const clearData = async () => {
+      try {
+        await AsyncStorage.clear();
+        setCacheSize('0B');
+        setFavCount(0);
+        setDownloadCount(0);
+        setUserName('Guest User');
+        setUserEmail('Tap to sign up');
+        
+        if (Platform.OS === 'web') {
+          window.alert("All local data and caches cleared.");
+        } else {
           Alert.alert("Success", "All local data and caches cleared.");
-      }}
-    ]);
+        }
+      } catch (error) {
+        console.error("Failed to clear cache", error);
+      }
+    };
+
+    if (Platform.OS === 'web') {
+      const confirmClear = window.confirm("Are you sure you want to clear all data, history, and favorites?");
+      if (confirmClear) clearData();
+    } else {
+      Alert.alert("Clear Caches", "Are you sure you want to clear all data, history, and favorites?", [
+        { text: "Cancel", style: "cancel" },
+        { text: "Clear", style: "destructive", onPress: clearData }
+      ]);
+    }
   };
 
-  // 👇 UPDATED SHARE FUNCTION 👇
   const handleShareApp = async () => { 
     try { 
       await Share.share({ message: 'Check out CineVault! 🎬 Watch your favorite movies and shows here: https://cve-rouge.vercel.app' }); 
@@ -126,7 +149,7 @@ export default function ProfileScreen() {
           <MenuRow Icon={Moon} title="Dark Mode" isSwitch switchValue={isDarkMode} onSwitchChange={toggleTheme} />
           <MenuRow Icon={Trash2} title="Clear Caches" value={cacheSize} onPress={handleClearCache} />
           <MenuRow Icon={Share2} title="Share App" onPress={handleShareApp} />
-          <MenuRow Icon={Info} title="About Us" onPress={() => setShowAboutModal(true)} /> {/* 👈 UPDATED */}
+          <MenuRow Icon={Info} title="About Us" onPress={() => setShowAboutModal(true)} />
           <MenuRow Icon={LogIn} title="Sign Up / Log In" onPress={() => Alert.alert("Coming Soon 🚀", "Sign in will be available soon!")} isLast />
         </View>
 
@@ -142,7 +165,6 @@ export default function ProfileScreen() {
         onClose={() => setShowInstallModal(false)} 
       />
       
-      {/* 👇 ADDED ABOUT MODAL 👇 */}
       <AboutModal 
         visible={showAboutModal} 
         onClose={() => setShowAboutModal(false)} 
