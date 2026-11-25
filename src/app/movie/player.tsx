@@ -1,43 +1,47 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import * as ScreenOrientation from 'expo-screen-orientation';
 import { X } from 'lucide-react-native';
-import React, { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { WebView } from 'react-native-webview';
-
-// 👇 MEMOIZED IFRAME: This prevents iOS Safari from reloading the video on rotation
-const WebIframe = React.memo(({ url }: { url: string }) => {
-  return (
-    <iframe
-      src={url}
-      style={{ width: '100%', height: '100%', border: 'none' }}
-      allowFullScreen
-      allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
-      scrolling="no"
-    />
-  );
-});
 
 export default function VideoPlayer() {
   const router = useRouter();
   const { videoUrl, title } = useLocalSearchParams();
+  
+  // Ref to attempt auto-fullscreen on web
+  const iframeRef = useRef<any>(null);
 
   useEffect(() => {
-    if (Platform.OS !== 'web') {
-      ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE);
-      return () => {
-        ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP);
-      };
+    // Attempt to force fullscreen on web browsers
+    if (Platform.OS === 'web' && iframeRef.current) {
+      try {
+        if (iframeRef.current.requestFullscreen) {
+          iframeRef.current.requestFullscreen().catch((err: any) => {
+            console.log("Auto-fullscreen blocked by browser (requires user tap):", err);
+          });
+        } else if (iframeRef.current.webkitRequestFullscreen) { /* Safari */
+          iframeRef.current.webkitRequestFullscreen();
+        }
+      } catch (error) {
+        console.log("Fullscreen error:", error);
+      }
     }
-  }, []);
+  }, [videoUrl]);
 
   return (
     <View style={styles.container}>
       {videoUrl ? (
         Platform.OS === 'web' ? (
-          // 👇 FIXED: Changed to StyleSheet.absoluteFill
-          <View style={StyleSheet.absoluteFill}>
-            <WebIframe url={videoUrl as string} />
+          // 👇 FIXED: Replaced absoluteFillObject with manual absolute positioning
+          <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
+            <iframe
+              ref={iframeRef}
+              src={videoUrl as string}
+              style={{ width: '100%', height: '100%', border: 'none' }}
+              allowFullScreen
+              allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
+              scrolling="no"
+            />
           </View>
         ) : (
           <WebView
@@ -68,11 +72,11 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#000' },
   webview: { flex: 1, backgroundColor: '#000' },
   overlay: {
-    // 👇 FIXED: Manually wrote out the absolute fill style
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
+    // 👇 FIXED: Replaced absoluteFillObject with manual absolute positioning
+    position: 'absolute', 
+    top: 0, 
+    left: 0, 
+    right: 0, 
     bottom: 0,
     zIndex: 10,
   },
