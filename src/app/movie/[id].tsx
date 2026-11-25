@@ -124,7 +124,7 @@ export default function MediaDetails() {
     if (trailerKey) router.push({ pathname: '/movie/player', params: { youtubeId: trailerKey, title: media.title || media.name } });
   };
 
-  // 👇 UPDATED TO SAVE WATCH HISTORY 👇
+  // 👇 UPDATED TO USE VIDSRC.TO AND SAVE WATCH HISTORY 👇
   const handlePlayFullMovie = async (seasonNum?: number, epNum?: number) => {
     try {
       // 1. Save to Watch History
@@ -142,14 +142,12 @@ export default function MediaDetails() {
       
       await AsyncStorage.setItem('@watch_history', JSON.stringify(history));
 
-      // 2. Build URL and navigate
+      // 2. Build URL using VidSrc.to and navigate
       let url = '';
-      const params = `?autoplay=true&title=false&poster=false&primaryColor=F00032&player=jw`;
-
       if (type === 'tv' && seasonNum && epNum) {
-        url = `https://vidlink.pro/tv/${media.id}/${seasonNum}/${epNum}${params}`;
+        url = `https://vidsrc.to/embed/tv/${media.id}/${seasonNum}/${epNum}`;
       } else {
-        url = `https://vidlink.pro/movie/${media.id}${params}`;
+        url = `https://vidsrc.to/embed/movie/${media.id}`;
       }
 
       router.push({ 
