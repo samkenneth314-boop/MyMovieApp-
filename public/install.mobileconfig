@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>PayloadContent</key>
+    <array>
+        <dict>
+            <key>FullScreen</key>
+            <true/>
+            <key>Icon</key>
+            <data>
+            <!-- You need to put a Base64 encoded version of your 512x512 icon here -->
+            </data>
+            <key>IsRemovable</key>
+            <true/>
+            <key>Label</key>
+            <string>CineVault</string>
+            <key>PayloadDescription</key>
+            <string>Installs the CineVault Web App</string>
+            <key>PayloadDisplayName</key>
+            <string>CineVault Web Clip</string>
+            <key>PayloadIdentifier</key>
+            <string>com.cinevault.webclip</string>
+            <key>PayloadType</key>
+            <string>com.apple.webClip.managed</string>
+            <key>PayloadUUID</key>
+            <string>12345678-1234-1234-1234-123456789012</string>
+            <key>PayloadVersion</key>
+            <integer>1</integer>
+            <key>URL</key>
+            <string>https://YOUR_VERCEL_URL.vercel.app</string>
+        </dict>
+    </array>
+    <key>PayloadDisplayName</key>
+    <string>CineVault Installer</string>
+    <key>PayloadIdentifier</key>
+    <string>com.cinevault.installer</string>
+    <key>PayloadOrganization</key>
+    <string>CineVault</string>
+    <key>PayloadRemovalDisallowed</key>
+    <false/>
+    <key>PayloadType</key>
+    <string>Configuration</string>
+    <key>PayloadUUID</key>
+    <string>87654321-4321-4321-4321-210987654321</string>
+    <key>PayloadVersion</key>
+    <integer>1</integer>
+</dict>
+</plist>
