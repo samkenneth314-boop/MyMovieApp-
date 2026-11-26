@@ -152,13 +152,9 @@ export default function MediaDetails() {
 
       router.push({ 
         pathname: '/movie/player', 
-        params: {
-          videoUrl: url,
-          id: String(media.id),
-          type: String(type),
-          season: seasonNum ? String(seasonNum) : '',
-          episode: epNum ? String(epNum) : '',
-          title: media.title || media.name,
+        params: { 
+          videoUrl: url, 
+          title: media.title || media.name 
         } 
       });
     } catch (error) {
