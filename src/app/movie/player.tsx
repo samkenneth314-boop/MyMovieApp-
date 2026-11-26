@@ -1,68 +1,198 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { X } from 'lucide-react-native';
-import { useEffect, useRef } from 'react';
-import { Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { RefreshCcw, X } from 'lucide-react-native';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import {
+  ActivityIndicator,
+  Platform,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { WebView } from 'react-native-webview';
+
+const SERVERS = ['VidLink', 'VidSrc', '2Embed', 'Embed.su'] as const;
 
 export default function VideoPlayer() {
   const router = useRouter();
-  const { videoUrl, title } = useLocalSearchParams();
-  
-  // Ref to attempt auto-fullscreen on web
-  const iframeRef = useRef<any>(null);
+  const params = useLocalSearchParams<{
+    videoUrl?: string;
+    id?: string;
+    type?: string;
+    season?: string;
+    episode?: string;
+    title?: string;
+  }>();
+
+  const { videoUrl, id, type = 'movie', season, episode, title } = params;
+  const [serverIndex, setServerIndex] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const sources = useMemo(() => {
+    if (!id) return videoUrl ? [{ name: 'Current source', url: videoUrl }] : [];
+
+    const isEpisode = type === 'tv' && season && episode;
+    return [
+      {
+        name: 'VidLink',
+        url: isEpisode
+          ? `https://vidlink.pro/tv/${id}/${season}/${episode}`
+          : `https://vidlink.pro/movie/${id}`,
+      },
+      {
+        name: 'VidSrc',
+        url: isEpisode
+          ? `https://vidsrc.me/embed/tv?tmdb=${id}&season=${season}&episode=${episode}`
+          : `https://vidsrc.me/embed/movie?tmdb=${id}`,
+      },
+      {
+        name: '2Embed',
+        url: isEpisode
+          ? `https://www.2embed.cc/embedtv/${id}&s=${season}&e=${episode}`
+          : `https://www.2embed.cc/embed/${id}`,
+      },
+      {
+        name: 'Embed.su',
+        url: isEpisode
+          ? `https://embed.su/embed/tv/${id}/${season}/${episode}`
+          : `https://embed.su/embed/movie/${id}`,
+      },
+    ];
+  }, [id, type, season, episode, videoUrl]);
+
+  const currentSource = sources[serverIndex];
 
   useEffect(() => {
-    // Attempt to force fullscreen on web browsers
-    if (Platform.OS === 'web' && iframeRef.current) {
-      try {
-        if (iframeRef.current.requestFullscreen) {
-          iframeRef.current.requestFullscreen().catch((err: any) => {
-            console.log("Auto-fullscreen blocked by browser (requires user tap):", err);
-          });
-        } else if (iframeRef.current.webkitRequestFullscreen) { /* Safari */
-          iframeRef.current.webkitRequestFullscreen();
-        }
-      } catch (error) {
-        console.log("Fullscreen error:", error);
+    setLoading(true);
+    setLoadError(false);
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+
+    timeoutRef.current = setTimeout(() => {
+      if (serverIndex < sources.length - 1) {
+        setServerIndex(index => index + 1);
+      } else {
+        setLoading(false);
+        setLoadError(true);
       }
+    }, 20000);
+
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
+  }, [serverIndex, sources.length]);
+
+  const finishLoading = () => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    setLoading(false);
+    setLoadError(false);
+  };
+
+  const handleLoadError = () => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    if (serverIndex < sources.length - 1) {
+      setServerIndex(index => index + 1);
+    } else {
+      setLoading(false);
+      setLoadError(true);
     }
-  }, [videoUrl]);
+  };
+
+  const switchServer = () => {
+    if (sources.length < 2) return;
+    setServerIndex(index => (index + 1) % sources.length);
+  };
+
+  if (!currentSource) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.message}>No video source was provided.</Text>
+        <TouchableOpacity style={styles.closeButton} onPress={() => router.back()}>
+          <X color="#fff" size={23} />
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
-      {videoUrl ? (
-        Platform.OS === 'web' ? (
-          // 👇 FIXED: Replaced absoluteFillObject with manual absolute positioning
-          <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
-            <iframe
-              ref={iframeRef}
-              src={videoUrl as string}
-              style={{ width: '100%', height: '100%', border: 'none' }}
-              allowFullScreen
-              allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
-              scrolling="no"
-            />
-          </View>
-        ) : (
-          <WebView
-            source={{ uri: videoUrl as string }}
-            style={styles.webview}
-            javaScriptEnabled={true}
-            domStorageEnabled={true}
-            allowsInlineMediaPlayback={true}
-            mediaPlaybackRequiresUserAction={false}
-          />
-        )
+      {Platform.OS === 'web' ? (
+        <iframe
+          key={currentSource.url}
+          title={String(title || 'CineVault video')}
+          src={currentSource.url}
+          onLoad={finishLoading}
+          onError={handleLoadError}
+          allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
+          allowFullScreen
+          referrerPolicy="no-referrer"
+          style={{
+            position: 'absolute',
+            inset: 0,
+            width: '100%',
+            height: '100%',
+            border: 0,
+            backgroundColor: '#000',
+          }}
+        />
       ) : (
-        <Text style={{ color: 'white', alignSelf: 'center' }}>No video URL provided.</Text>
+        <WebView
+          key={currentSource.url}
+          source={{ uri: currentSource.url }}
+          style={styles.webview}
+          javaScriptEnabled
+          domStorageEnabled
+          cacheEnabled
+          allowsFullscreenVideo
+          allowsInlineMediaPlayback
+          mediaPlaybackRequiresUserAction={false}
+          setSupportMultipleWindows={false}
+          onLoadEnd={finishLoading}
+          onError={handleLoadError}
+          onHttpError={event => {
+            if (event.nativeEvent.statusCode >= 400) handleLoadError();
+          }}
+        />
       )}
 
-      <View style={styles.overlay} pointerEvents="box-none">
-        <TouchableOpacity style={styles.closeButton} onPress={() => router.back()}>
-          <X color="#fff" size={24} />
+      {loading && (
+        <View style={styles.loadingOverlay} pointerEvents="none">
+          <ActivityIndicator size="large" color="#1DB954" />
+          <Text style={styles.message}>Loading {currentSource.name}...</Text>
+        </View>
+      )}
+
+      {loadError && (
+        <View style={styles.errorOverlay}>
+          <Text style={styles.message}>This source did not load. Try another server.</Text>
+          <TouchableOpacity style={styles.actionButton} onPress={switchServer}>
+            <RefreshCcw color="#fff" size={17} />
+            <Text style={styles.actionText}>Try another server</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
+      <View style={styles.controls} pointerEvents="box-none">
+        <TouchableOpacity
+          accessibilityLabel="Close video player"
+          style={styles.closeButton}
+          onPress={() => router.back()}
+        >
+          <X color="#fff" size={23} />
         </TouchableOpacity>
 
-        <Text style={styles.title} numberOfLines={1}>{title}</Text>
+        <View style={styles.topTitle} pointerEvents="none">
+          <Text style={styles.title} numberOfLines={1}>{title || 'CineVault'}</Text>
+          <Text style={styles.serverName}>{currentSource.name}</Text>
+        </View>
+
+        {sources.length > 1 && (
+          <TouchableOpacity style={styles.switchButton} onPress={switchServer}>
+            <RefreshCcw color="#fff" size={17} />
+            <Text style={styles.actionText}>Switch server</Text>
+          </TouchableOpacity>
+        )}
       </View>
     </View>
   );
@@ -71,21 +201,61 @@ export default function VideoPlayer() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#000' },
   webview: { flex: 1, backgroundColor: '#000' },
-  overlay: {
-    // 👇 FIXED: Replaced absoluteFillObject with manual absolute positioning
-    position: 'absolute', 
-    top: 0, 
-    left: 0, 
-    right: 0, 
-    bottom: 0,
-    zIndex: 10,
+  controls: { ...StyleSheet.absoluteFillObject, zIndex: 10 },
+  closeButton: {
+    position: 'absolute',
+    top: 20,
+    left: 18,
+    zIndex: 12,
+    padding: 10,
+    borderRadius: 30,
+    backgroundColor: 'rgba(0,0,0,0.72)',
   },
-  closeButton: { 
-    position: 'absolute', top: 20, left: 20, 
-    backgroundColor: 'rgba(0,0,0,0.5)', padding: 10, borderRadius: 50 
+  topTitle: {
+    position: 'absolute',
+    top: 25,
+    left: 68,
+    right: 150,
   },
-  title: { 
-    position: 'absolute', top: 30, left: 70, right: 20, 
-    color: '#fff', fontSize: 16, fontWeight: 'bold' 
-  }
+  title: { color: '#fff', fontSize: 15, fontWeight: '600' },
+  serverName: { color: '#bbb', fontSize: 11, marginTop: 3 },
+  switchButton: {
+    position: 'absolute',
+    right: 18,
+    top: 18,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 13,
+    borderRadius: 24,
+    backgroundColor: 'rgba(0,0,0,0.72)',
+  },
+  actionText: { color: '#fff', fontSize: 13, fontWeight: '600' },
+  loadingOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 5,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.72)',
+  },
+  errorOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+    backgroundColor: 'rgba(0,0,0,0.88)',
+  },
+  actionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 24,
+    backgroundColor: '#1DB954',
+  },
+  message: { color: '#fff', fontSize: 14, textAlign: 'center', marginTop: 12 },
 });
